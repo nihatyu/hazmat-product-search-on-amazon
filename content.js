@@ -1,3 +1,6 @@
+// Bekleme fonksiyonu
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 let firtsiFrameEl = null;
 let secondiFrameEl = null;
 let otherIframe = null;
@@ -8,6 +11,27 @@ const ASINS = [
   { text: "B0BTM2J5L7", result: "" },
   { text: "B07BZP1L7F", result: "" },
   //above variables are for testing purposes
+  { text: "B07WXJ728R", result: "" },
+  { text: "B07JZGVN41", result: "" },
+  { text: "B0BKMX4G5G", result: "" },
+  { text: "B077YNVXK8", result: "" },
+  { text: "B091YPX1V2", result: "" },
+  { text: "B077YL95M3", result: "" },
+  { text: "B01N28NU34", result: "" },
+  { text: "B0BG4TZR6Z", result: "" },
+  { text: "B01IN59GDU", result: "" },
+  { text: "B08R38FJ68", result: "" },
+  { text: "B09FFJ8CNG", result: "" },
+  { text: "B07W86Y57J", result: "" },
+  { text: "B07WK86D8N", result: "" },
+  { text: "B083QDDRPK", result: "" },
+  { text: "B07MZG3TXC", result: "" },
+  { text: "B0957DQQNN", result: "" },
+  { text: "B09K7FGWVN", result: "" },
+  { text: "B08ZXL1B3Z", result: "" },
+  { text: "B089R5CBC3", result: "" },
+  { text: "B09QC5RDKN", result: "" },
+  { text: "B093SSQJ9N", result: "" },
 ];
 let asinIndex = 0;
 
