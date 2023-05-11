@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Hazmat Kontrol",
+  "version": "1.0",
+  "description": "Hazmat",
+  "content_scripts": [
+    {
+      "js": ["content.js"],
+      "matches": ["https://sellercentral.amazon.com/*"],
+      "all_frames": true,
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "permissions": [
+    "tabs",
+    "scripting",
+    "webNavigation",
+    "activeTab",
+    "background",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
