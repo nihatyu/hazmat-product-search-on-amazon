@@ -1,59 +1,137 @@
-// Bekleme fonksiyonu
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-async function waitBeforeStart() {
-  await sleep(10000);
-  //   const radioSelector =
-  //     "#seller_intent_radio_option_0 > div > label > input[type=radio]";
-  //   const radioInput = document.querySelector(radioSelector);
-  //   console.log("radioSelector", radioInput);
-  await performAutomation();
-}
+let firtsiFrameEl = null;
+let secondiFrameEl = null;
+let otherIframe = null;
 
 // ASINS dizisi
-const ASINS = ["B07Q3XL4MR", "B0BTM2J5L7", "B07BZP1L7F"];
+const ASINS = [
+  { text: "B07Q3XL4MR", result: "" },
+  { text: "B0BTM2J5L7", result: "" },
+  { text: "B07BZP1L7F", result: "" },
+  //above variables are for testing purposes
+];
+let asinIndex = 0;
 
-// Ana fonksiyon
-async function performAutomation() {
-  for (const asin of ASINS) {
-    // Birinci adım
+let btnStart = document.createElement("button");
+btnStart.innerText = "Start";
+btnStart.setAttribute(
+  "style",
+  `
+position: relative; 
+top: 5px;
+`
+);
+btnStart.addEventListener("click", function () {
+  state = !state;
+  btnStart.innerText = state ? "Stop" : "Start";
+});
 
-    const checkAsinWindow = "#title-link > div > div:nth-child(1) > a";
-    const checkAsinEnter = document.querySelector(checkAsinWindow);
-    checkAsinEnter.click();
-    console.log("check asin tamam!");
-    await sleep(10000);
+let state = false;
 
-    const radioSelector =
-      "#seller_intent_radio_option_0 > div > label > input[type=radio]";
-    const radioInput = document.querySelector(radioSelector);
-    radioInput.click();
-    console.log("radio tamam!");
-    await sleep(2000);
+function start() {
+  const resultContainer = otherIframe.document.querySelector(
+    "#augur_paramount_fba_dangerous_goods_wf_content_box_id"
+  );
 
-    // İkinci adım
-    const announceSelector = "#-announce";
-    const announceInput = document.querySelector(announceSelector);
-    announceInput.click();
-    console.log("next button tamam!");
-    await sleep(5000);
+  if (resultContainer) {
+    const diagState = resultContainer.querySelector(".diag_state");
+    const instructionsEl = resultContainer.querySelector(".instructions");
 
-    // Üçüncü adım
-    const itemSelector = "#item_id";
+    const instructionsElLink = instructionsEl.querySelector(".a-declarative");
 
-    const itemInput = document.querySelector(itemSelector);
-    itemInput.value = asin;
-    console.log("inputa asin girişi tamam!");
-    await sleep(3000);
+    if (diagState && instructionsEl && instructionsElLink) {
+      const resultEl = diagState.children[0];
+      const resultText = resultEl.innerText;
 
-    // Dördüncü adım
-    const continueSelector = "#continue_task_18ie4by-announce";
-    const continueButton = document.querySelector(continueSelector);
-    continueButton.click();
-    console.log("search button tamam!");
-    await sleep(5000);
+      if (resultText) {
+        if (resultText.includes("is not dangerous")) {
+          ASINS[asinIndex].result = "This product is not dangerous goods";
+        } else if (resultText.includes("is not enrolled")) {
+          ASINS[asinIndex].result = "is not enrolled";
+        } else if (resultText.includes("is a dangerous good")) {
+          ASINS[asinIndex].result = " is a dangerous good";
+        }
+        asinIndex = asinIndex + 1;
+
+        console.log(ASINS);
+
+        if (instructionsEl) {
+          instructionsElLink.children[0].click();
+          return;
+        }
+      } else {
+        console.log("result Text Not Found");
+      }
+      return;
+    }
   }
+
+  const asinsInput = otherIframe.document.querySelector("#item_id");
+  if (asinsInput) {
+    asinsInput.value = ASINS[asinIndex].text;
+    asinsInput.focus();
+    setTimeout(() => {
+      const checkStatusBtn = otherIframe.document.querySelector(
+        "#continue_task_18ie4by-announce"
+      );
+      if (checkStatusBtn) {
+        checkStatusBtn.click();
+      }
+    }, 500);
+    return;
+  }
+
+  const lookRadioBox = otherIframe.document.querySelector(
+    "#seller_intent_radio_option_0 > div > label > input[type=radio]"
+  );
+  if (lookRadioBox) {
+    lookRadioBox.click();
+    setTimeout(() => {
+      const nextBtn = otherIframe.document.querySelector("#-announce");
+      if (nextBtn) {
+        nextBtn.click();
+      }
+    }, 500);
+    return;
+  }
+
+  // const checkAsinsDangerousLink = document.querySelector(
+  //   "#title-link > div > div:nth-child(1) > a"
+  // );
+  // if (checkAsinsDangerousLink) {
+  //   checkAsinsDangerousLink.click();
+  //   return;
+  // }
 }
 
-// Ana fonksiyonu çağırma
-waitBeforeStart();
+setInterval(() => {
+  if (state) {
+    if (ASINS.length > asinIndex) {
+      firtsiFrameEl = document.getElementById("shp-content-frame");
+      if (firtsiFrameEl) {
+        secondiFrameEl = firtsiFrameEl.contentWindow.document
+          .querySelector(".solution-contents")
+          .shadowRoot.querySelector(".spl-element-frame");
+
+        otherIframe = secondiFrameEl.contentWindow.document
+          .querySelector(".solution-contents")
+          .shadowRoot.querySelector(".spl-element-frame").contentWindow;
+      }
+      start();
+      console.log("start");
+    } else {
+      console.log("completed");
+      console.log("ASINS:", ASINS);
+      state = false;
+      btnStart.innerText = "Start";
+    }
+  }
+}, 1500);
+
+(async function waitBStart() {
+  await sleep(3000);
+  const asinCountEl = document.getElementById("asin-count");
+
+  if (asinCountEl) {
+    asinCountEl.appendChild(btnStart);
+  }
+})();
